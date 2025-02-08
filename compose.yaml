@@ -1,0 +1,51 @@
+name: Obsidian
+
+services:
+  obsidian:
+    image: lscr.io/linuxserver/obsidian:1.8.4
+    container_name: obsidian
+    volumes:
+      - type: bind
+        source: ${CONFIG}
+        target: /config
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    ports:
+      - '127.0.0.1:3000:3000'
+      - '127.0.0.1:3001:3001'
+    networks:
+      - notes
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 1m
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    # kics-scan ignore-block
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - SETGID
+      - SETUID
+      - SYS_RESOURCE
+    cap_drop:
+      - ALL
+    deploy:
+      resources:
+        limits:
+          cpus: ${CPU_LIMIT}
+          memory: 1G
+        reservations:
+          cpus: ${CPU_RESERVATION}
+          memory: 512M
+    security_opt:
+      - no-new-privileges:true
+    shm_size: "1gb"
+
+networks:
+  notes:
+    external: false
+    driver: bridge
